@@ -18,10 +18,15 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     if (theme === 'dark') {
       root.classList.add('dark');
+      body.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
+      body.classList.remove('dark');
+      root.style.colorScheme = 'light';
     }
     localStorage.setItem('nexushr_theme', theme);
   }, [theme]);
