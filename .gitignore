@@ -1,0 +1,23 @@
+# Maven
+target/
+*.class
+*.log
+
+# Spring Boot
+.mvn/
+!.mvn/wrapper/maven-wrapper.properties
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Environment & Secrets
+.env
+*.pem

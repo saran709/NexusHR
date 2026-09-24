@@ -1,0 +1,52 @@
+{{- range $name, $service := .Values.services }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexushr-{{ $name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app.kubernetes.io/name: nexushr-{{ $name }}
+spec:
+  replicas: {{ $service.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nexushr-{{ $name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nexushr-{{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: "{{ $service.image }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ $service.port }}
+          resources:
+            requests:
+              cpu: "{{ $service.resources.requests.cpu }}"
+              memory: "{{ $service.resources.requests.memory }}"
+            limits:
+              cpu: "{{ $service.resources.limits.cpu }}"
+              memory: "{{ $service.resources.limits.memory }}"
+          envFrom:
+            - configMapRef:
+                name: nexushr-config
+            - secretRef:
+                name: nexushr-secrets
+          {{- if ne $name "frontend" }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ $service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          {{- end }}
+---
+{{- end }}

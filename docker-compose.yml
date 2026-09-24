@@ -1,0 +1,219 @@
+version: '3.8'
+
+networks:
+  nexushr-net:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: nexushr-postgres
+    networks:
+      - nexushr-net
+    environment:
+      POSTGRES_DB: nexushr
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexushr"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexushr-redis
+    networks:
+      - nexushr-net
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: api-gateway
+    container_name: nexushr-api-gateway
+    networks:
+      - nexushr-net
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: auth-service
+    container_name: nexushr-auth-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  employee-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: employee-service
+    container_name: nexushr-employee-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  attendance-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: attendance-service
+    container_name: nexushr-attendance-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  leave-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: leave-service
+    container_name: nexushr-leave-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payroll-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: payroll-service
+    container_name: nexushr-payroll-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  performance-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: performance-service
+    container_name: nexushr-performance-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nexushr
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: notification-service
+    container_name: nexushr-notification-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: ai-service
+    container_name: nexushr-ai-service
+    networks:
+      - nexushr-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: nexushr-frontend
+    networks:
+      - nexushr-net
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nexushr-prometheus
+    networks:
+      - nexushr-net
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nexushr-grafana
+    networks:
+      - nexushr-net
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:

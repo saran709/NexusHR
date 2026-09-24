@@ -1,0 +1,91 @@
+global:
+  environment: production
+
+namespace: nexushr
+
+database:
+  host: postgres-postgresql
+  port: 5432
+  name: nexushr
+  user: postgres
+
+redis:
+  host: redis-master
+  port: 6379
+
+services:
+  gateway:
+    replicaCount: 2
+    image: nexushr/api-gateway:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  auth:
+    replicaCount: 2
+    image: nexushr/auth-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  employee:
+    replicaCount: 2
+    image: nexushr/employee-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  attendance:
+    replicaCount: 2
+    image: nexushr/attendance-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  leave:
+    replicaCount: 2
+    image: nexushr/leave-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  payroll:
+    replicaCount: 2
+    image: nexushr/payroll-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "200m", memory: "512Mi" }
+      limits: { cpu: "1000m", memory: "1Gi" }
+  performance:
+    replicaCount: 2
+    image: nexushr/performance-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  notification:
+    replicaCount: 2
+    image: nexushr/notification-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "100m", memory: "256Mi" }
+      limits: { cpu: "500m", memory: "512Mi" }
+  ai:
+    replicaCount: 2
+    image: nexushr/ai-service:latest
+    port: 8080
+    resources:
+      requests: { cpu: "200m", memory: "512Mi" }
+      limits: { cpu: "1000m", memory: "1Gi" }
+  frontend:
+    replicaCount: 2
+    image: nexushr/frontend:latest
+    port: 80
+    resources:
+      requests: { cpu: "50m", memory: "128Mi" }
+      limits: { cpu: "200m", memory: "256Mi" }
+
+ingress:
+  enabled: true
+  className: nginx
+  host: nexushr.enterprise.local

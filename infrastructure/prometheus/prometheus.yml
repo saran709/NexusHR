@@ -1,0 +1,49 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'nexushr-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8080']
+
+  - job_name: 'nexushr-auth'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:8080']
+
+  - job_name: 'nexushr-employee'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['employee-service:8080']
+
+  - job_name: 'nexushr-attendance'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['attendance-service:8080']
+
+  - job_name: 'nexushr-leave'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['leave-service:8080']
+
+  - job_name: 'nexushr-payroll'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['payroll-service:8080']
+
+  - job_name: 'nexushr-performance'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['performance-service:8080']
+
+  - job_name: 'nexushr-notification'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['notification-service:8080']
+
+  - job_name: 'nexushr-ai'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ai-service:8080']

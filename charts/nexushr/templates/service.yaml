@@ -1,0 +1,17 @@
+{{- range $name, $service := .Values.services }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexushr-{{ $name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $service.port }}
+      targetPort: {{ $service.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: nexushr-{{ $name }}
+---
+{{- end }}
