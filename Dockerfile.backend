@@ -1,5 +1,5 @@
 # Stage 1: Build Maven Service
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 COPY backend/pom.xml .
 COPY backend/common/pom.xml ./common/
@@ -17,7 +17,7 @@ COPY backend/ .
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime Image with Non-Root User
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S nexushr && adduser -S nexushr -G nexushr
 WORKDIR /app
 

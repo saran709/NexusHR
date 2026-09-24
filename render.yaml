@@ -1,0 +1,76 @@
+services:
+  - type: web
+    name: nexushr-auth-service
+    env: docker
+    dockerfilePath: Dockerfile.backend
+    dockerContext: .
+    buildArgs:
+      SERVICE_NAME: auth-service
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: DB_URL
+        fromDatabase:
+          name: nexushr-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: nexushr-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: nexushr-db
+          property: password
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: nexushr-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: nexushr-redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+
+  - type: web
+    name: nexushr-employee-service
+    env: docker
+    dockerfilePath: Dockerfile.backend
+    dockerContext: .
+    buildArgs:
+      SERVICE_NAME: employee-service
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: DB_URL
+        fromDatabase:
+          name: nexushr-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: nexushr-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: nexushr-db
+          property: password
+      - key: JWT_SECRET
+        sync: false
+        value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+databases:
+  - name: nexushr-db
+    databaseName: nexushr
+    user: nexushr_user
+    plan: free
+
+  - type: redis
+    name: nexushr-redis
+    plan: free
+    ipAllowList: []
