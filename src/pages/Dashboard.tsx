@@ -22,6 +22,7 @@ import {
 import apiClient from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { EmployeeAttendanceTrend } from '../components/dashboard/EmployeeAttendanceTrend';
 
 export const Dashboard: React.FC = () => {
   const { user, hasRole } = useAuth();
@@ -277,6 +278,9 @@ export const Dashboard: React.FC = () => {
               </Card>
             </div>
           </div>
+
+          {/* Attendance Trend Chart */}
+          <EmployeeAttendanceTrend />
         </>
       )}
     </div>

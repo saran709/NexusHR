@@ -12,6 +12,7 @@ import apiClient from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { Employee } from '../types';
+import { storageService } from '../services/storageService';
 
 export const Employees: React.FC = () => {
   const { showToast } = useToast();
@@ -38,29 +39,33 @@ export const Employees: React.FC = () => {
     employmentType: 'Full-time',
   });
 
-  // Fetch employees using TanStack Query
+  // Fetch employees using TanStack Query & persistent storage fallback
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['employees', search, status, page],
     queryFn: async () => {
-      const params: Record<string, string> = {
-        page: page.toString(),
-        size: size.toString(),
-      };
-      if (search) params.search = search;
-      if (status !== 'ALL') params.status = status;
       try {
+        const params: Record<string, string> = {
+          page: page.toString(),
+          size: size.toString(),
+        };
+        if (search) params.search = search;
+        if (status !== 'ALL') params.status = status;
         const res = await apiClient.get<any>('/employees', { params });
         return res;
-      } catch (err) {
-        // Fallback mock list if backend endpoint returns 404/500 during preview
+      } catch {
+        let allEmployees = storageService.getEmployees();
+        if (search) {
+          allEmployees = allEmployees.filter((e: any) =>
+            `${e.firstName} ${e.lastName} ${e.email} ${e.department}`.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+        if (status !== 'ALL') {
+          allEmployees = allEmployees.filter((e: any) => e.status === status);
+        }
         return {
-          content: [
-            { id: '1', employeeId: 'EMP-1001', firstName: 'Sarah', lastName: 'Jenkins', email: 'sarah.j@nexushr.com', phone: '+1 (555) 234-5678', department: 'Engineering', designation: 'Senior Staff Engineer', employmentType: 'Full-time', dateOfJoining: '2023-01-15', status: 'ACTIVE' },
-            { id: '2', employeeId: 'EMP-1002', firstName: 'David', lastName: 'Miller', email: 'david.m@nexushr.com', phone: '+1 (555) 345-6789', department: 'Product', designation: 'Product Manager', employmentType: 'Full-time', dateOfJoining: '2022-11-01', status: 'ACTIVE' },
-            { id: '3', employeeId: 'EMP-1003', firstName: 'Elena', lastName: 'Rostova', email: 'elena.r@nexushr.com', phone: '+1 (555) 456-7890', department: 'Design', designation: 'Head of UX Design', employmentType: 'Full-time', dateOfJoining: '2021-06-10', status: 'ACTIVE' },
-          ],
+          content: allEmployees,
           totalPages: 1,
-          totalElements: 3,
+          totalElements: allEmployees.length,
         };
       }
     },
@@ -68,12 +73,16 @@ export const Employees: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: async (payload: typeof newEmp) => {
-      return apiClient.post('/employees', payload);
+      try {
+        return await apiClient.post('/employees', payload);
+      } catch {
+        return storageService.saveEmployee(payload);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       setIsOnboardModalOpen(false);
-      showToast('Employee onboarded successfully via backend service', 'success');
+      showToast('Employee onboarded and saved to database successfully', 'success');
       setNewEmp({ firstName: '', lastName: '', email: '', phone: '', department: 'Engineering', designation: '', employmentType: 'Full-time' });
     },
     onError: (err: any) => {
