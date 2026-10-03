@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import { DashboardSkeleton } from '../components/ui/DashboardSkeleton';
 import {
   Users,
   Clock,
@@ -72,7 +73,7 @@ export const Dashboard: React.FC = () => {
   const userRole = user?.role || 'EMPLOYEE';
 
   if (isLoading) {
-    return <SkeletonLoader rows={4} />;
+    return <DashboardSkeleton />;
   }
 
   return (

@@ -13,6 +13,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { Employee } from '../types';
 import { storageService } from '../services/storageService';
+import { EmployeeTableSkeleton } from '../components/ui/EmployeeTableSkeleton';
 
 export const Employees: React.FC = () => {
   const { showToast } = useToast();
@@ -143,7 +144,7 @@ export const Employees: React.FC = () => {
 
       {/* Content States */}
       {isLoading ? (
-        <SkeletonLoader rows={5} />
+        <EmployeeTableSkeleton />
       ) : isError ? (
         <div className="p-8 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl text-center">
           <p className="text-rose-600 dark:text-rose-400 font-bold">Failed to load employee directory from backend service.</p>
